@@ -9,10 +9,13 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import com.projectkorra.projectkorra.util.TempBlock;
 import com.sun.org.apache.xerces.internal.impl.XMLEntityHandler;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -37,9 +40,6 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private static final long COOLDOWN = 5000;
     private static final long DISTANCE_UNTIL_SPIKE = 8;
     private static final long SOURCE_RANGE = 4;
-    private static final long SPIKE_WIDTH = 1;
-    private static final long SPIKE_HEIGHT = 6;
-    private static final double HITBOX = 1.5;
     private static final double SPEED = 3;
 
     private double damage = 3;
@@ -122,7 +122,8 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
             distanceTravelled = 0;
 
         } else {
-            ParticleEffect.SQUID_INK.display(location, 3, direction.getX(), direction.getY() + 3, direction.getZ());
+            ParticleEffect.REDSTONE.display(location, 10, 0, 0.5, 0, new Particle.DustOptions(Color.fromRGB(165, 80 ,42), (float) 1.2));
+
 
         }
 
@@ -251,4 +252,3 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         return VERSION;
     }
 }
-
