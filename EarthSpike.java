@@ -75,6 +75,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
         sourceBlock = block;
         location = block.getLocation().add(.5, .5, .5);
+        direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE).multiply(SPEED));
         direction.multiply(0.5);
         state = States.SOURCE_SELECTED;
         start();
@@ -84,6 +85,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     }
 
     private void progressSourceSelected() {
+        ProjectKorra.log.info("Source Selected");
        // playFocusEarthEffect(sourceBlock);
 
         if(sourceBlock.getLocation().distanceSquared(player.getLocation()) > SOURCE_RANGE * SOURCE_RANGE || !isEarthbendable(player, sourceBlock))  {
@@ -95,7 +97,9 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     }
 
     private void progressTravelling() {
+        ProjectKorra.log.info("Progress Travelling");
         location.add(direction);
+
 
         distanceTravelled += SPEED;
 
@@ -123,6 +127,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     }
 
     private void progressSpike() {
+        ProjectKorra.log.info("Spike Generated");
         new RaiseEarth(player, location, 6);
         affectTargets();
     }
@@ -132,7 +137,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     public void onClick(){
         if (state == States.SOURCE_SELECTED) {
             state = States.TRAVELLING;
-            direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE).multiply(SPEED));
+
         }
 
 
