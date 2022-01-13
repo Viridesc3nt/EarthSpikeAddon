@@ -38,10 +38,8 @@ public class EarthSpikeListener implements Listener {
 
         Player player = event.getPlayer();
         EarthSpike earthSpike = CoreAbility.getAbility(player, EarthSpike.class);
+        earthSpike.onClick();
 
-        if(earthSpike != null) {
-            earthSpike.onClick();
-        }
 
     }
 
