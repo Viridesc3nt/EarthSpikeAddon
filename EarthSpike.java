@@ -36,7 +36,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private static final String NAME = "EarthSpike";
     private static final long COOLDOWN = 5000;
     private static final long DISTANCE_UNTIL_SPIKE = 4;
-    private static final long SOURCE_RANGE = 3;
+    private static final long SOURCE_RANGE = 10;
     private static final long SPIKE_WIDTH = 1;
     private static final long SPIKE_HEIGHT = 6;
     private static final double HITBOX = 1.5;
@@ -72,7 +72,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
         }
 
-
+        distanceTravelled = 0;
         sourceBlock = block;
         location = block.getLocation().add(.5, .5, .5);
         direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE).multiply(SPEED));
@@ -102,11 +102,14 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
 
         distanceTravelled += SPEED;
+        System.out.println(distanceTravelled);
 
-        if (distanceTravelled > DISTANCE_UNTIL_SPIKE) {
-            ParticleEffect.SQUID_INK.display(location, 4, direction.getX(), direction.getY(), direction.getZ());
-        } else {
+        if (distanceTravelled >= DISTANCE_UNTIL_SPIKE) {
             progressSpike();
+            distanceTravelled = 0;
+
+        } else {
+            ParticleEffect.SQUID_INK.display(location, 0, direction.getX(), 1, direction.getZ());
 
         }
 
@@ -130,6 +133,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         ProjectKorra.log.info("Spike Generated");
         new RaiseEarth(player, location, 6);
         affectTargets();
+        removeWithCooldown();
     }
 
 
