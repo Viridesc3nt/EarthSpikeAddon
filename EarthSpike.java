@@ -1,3 +1,4 @@
+
 package me.justinjaques.earthspike;
 
 import com.projectkorra.projectkorra.GeneralMethods;
@@ -75,23 +76,35 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         distanceTravelled = 0;
         sourceBlock = block;
         location = block.getLocation().add(.5, .5, .5);
-        direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE).multiply(SPEED));
-        direction.multiply(0.5);
+
+
         state = States.SOURCE_SELECTED;
         start();
 
 
 
     }
+    public void onClick(){
+        if (state == States.SOURCE_SELECTED) {
+            ProjectKorra.log.info("Clicked");
+            this.direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE)).normalize().multiply(SPEED);
+            direction.multiply(0.5);
+            state = States.TRAVELLING;
+
+
+        }
+
+
+    }
+
 
     private void progressSourceSelected() {
         ProjectKorra.log.info("Source Selected");
        // playFocusEarthEffect(sourceBlock);
 
         if(sourceBlock.getLocation().distanceSquared(player.getLocation()) > SOURCE_RANGE * SOURCE_RANGE || !isEarthbendable(player, sourceBlock))  {
+            ProjectKorra.log.info("Source not in range");
             remove();
-        } else {
-            onClick();
         }
 
     }
@@ -105,7 +118,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         System.out.println(distanceTravelled);
 
         if (distanceTravelled >= DISTANCE_UNTIL_SPIKE) {
-            progressSpike();
+            state = States.SPIKE;
             distanceTravelled = 0;
 
         } else {
@@ -131,6 +144,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
     private void progressSpike() {
         ProjectKorra.log.info("Spike Generated");
+        System.out.println(location);
         new RaiseEarth(player, location, 6);
         affectTargets();
         removeWithCooldown();
@@ -138,14 +152,6 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
 
 
-    public void onClick(){
-        if (state == States.SOURCE_SELECTED) {
-            state = States.TRAVELLING;
-
-        }
-
-
-    }
 
 
 
@@ -245,4 +251,3 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         return VERSION;
     }
 }
-
