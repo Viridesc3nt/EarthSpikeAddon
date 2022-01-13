@@ -1,4 +1,3 @@
-
 package me.justinjaques.earthspike;
 
 import com.projectkorra.projectkorra.GeneralMethods;
@@ -36,8 +35,8 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private static final String VERSION = "&21.0.0";
     private static final String NAME = "EarthSpike";
     private static final long COOLDOWN = 5000;
-    private static final long DISTANCE_UNTIL_SPIKE = 4;
-    private static final long SOURCE_RANGE = 10;
+    private static final long DISTANCE_UNTIL_SPIKE = 8;
+    private static final long SOURCE_RANGE = 4;
     private static final long SPIKE_WIDTH = 1;
     private static final long SPIKE_HEIGHT = 6;
     private static final double HITBOX = 1.5;
@@ -87,8 +86,9 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     public void onClick(){
         if (state == States.SOURCE_SELECTED) {
             ProjectKorra.log.info("Clicked");
-            this.direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, DISTANCE_UNTIL_SPIKE)).normalize().multiply(SPEED);
+            direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, SOURCE_RANGE * SOURCE_RANGE)).normalize().multiply(SPEED);
             direction.multiply(0.5);
+            this.direction.setY(0);
             state = States.TRAVELLING;
 
 
@@ -122,7 +122,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
             distanceTravelled = 0;
 
         } else {
-            ParticleEffect.SQUID_INK.display(location, 0, direction.getX(), 1, direction.getZ());
+            ParticleEffect.SQUID_INK.display(location, 3, direction.getX(), direction.getY() + 3, direction.getZ());
 
         }
 
@@ -145,7 +145,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private void progressSpike() {
         ProjectKorra.log.info("Spike Generated");
         System.out.println(location);
-        new RaiseEarth(player, location, 6);
+        new RaiseEarth(player, location, 3);
         affectTargets();
         removeWithCooldown();
     }
@@ -251,3 +251,4 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         return VERSION;
     }
 }
+
