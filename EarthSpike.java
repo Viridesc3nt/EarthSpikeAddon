@@ -5,10 +5,14 @@ import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.EarthAbility;
 import com.projectkorra.projectkorra.earthbending.RaiseEarth;
+import com.projectkorra.projectkorra.util.DamageHandler;
+import com.projectkorra.projectkorra.util.ParticleEffect;
 import com.projectkorra.projectkorra.util.TempBlock;
+import com.sun.org.apache.xerces.internal.impl.XMLEntityHandler;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -38,6 +42,8 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private static final double HITBOX = 1.5;
     private static final double SPEED = 3;
 
+    private double damage = 3;
+
 
     private Location location;
     private Listener listener;
@@ -45,7 +51,6 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     private Block sourceBlock;
     private Vector direction;
     private double distanceTravelled;
-    private List<TempBlock> tempBlocks;
 
 
 
@@ -61,17 +66,16 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
         Block block = getEarthSourceBlock(player, "EarthSpike",SOURCE_RANGE);
 
-        if(block == null) return;
+        if(block == null) {
+            System.out.println("Block Null");
+            return;
 
-        EarthSpike existing = getAbility(player, getClass());
-
-        if(existing != null) {
-            remove();
         }
+
 
         sourceBlock = block;
         location = block.getLocation().add(.5, .5, .5);
-        tempBlocks = new LinkedList<>();
+        direction.multiply(0.5);
         state = States.SOURCE_SELECTED;
         start();
 
@@ -79,26 +83,13 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
     }
 
-    private List<Block> getBlocksAlongLine(Location from, Location to) {
-        from = from.clone();
-        Vector between = GeneralMethods.getDirection(from, to).normalize();
-        List<Block> result = new ArrayList<>();
-        while(from.distanceSquared(to) > DISTANCE_UNTIL_SPIKE) {
-            if (!result.contains(from.getBlock())) {
-                result.add(from.getBlock());
-            }
-
-            from.add(between);
-        }
-        result.add(to.getBlock());
-        return result;
-
-    }
     private void progressSourceSelected() {
        // playFocusEarthEffect(sourceBlock);
 
         if(sourceBlock.getLocation().distanceSquared(player.getLocation()) > SOURCE_RANGE * SOURCE_RANGE || !isEarthbendable(player, sourceBlock))  {
             remove();
+        } else {
+            state = States.TRAVELLING;
         }
 
     }
@@ -107,21 +98,33 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         location.add(direction);
 
         distanceTravelled += SPEED;
-        //if distanceTravelled == BLOCKS_UNTIL_SPIKE
 
-        List<Block> line = getBlocksAlongLine(sourceBlock.getLocation().add(.5, .5, .5), location);
-        for(int i = tempBlocks.size(); i < line.size(); i++) {
-            Block blockOnLine = line.get(i);
-            tempBlocks.add(new TempBlock(blockOnLine, Material.GRASS_BLOCK));
+        if (distanceTravelled > DISTANCE_UNTIL_SPIKE) {
+            ParticleEffect.SQUID_INK.display(location, 4, direction.getX(), direction.getY(), direction.getZ());
+        } else {
+            progressSpike();
 
         }
-        state = States.SPIKE;
+
 
     }
 
+    private void affectTargets() {
+        List<Entity> targets  = GeneralMethods.getEntitiesAroundPoint(location, 1);
+        for (Entity target : targets) {
+            if (target.getUniqueId() == player.getUniqueId()) {
+                continue;
+            }
+
+            DamageHandler.damageEntity(target, damage, this);
+
+        }
+
+    }
 
     private void progressSpike() {
         new RaiseEarth(player, location, 6);
+        affectTargets();
     }
 
 
@@ -158,12 +161,15 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         switch(state) {
             case SOURCE_SELECTED:
                 progressSourceSelected();
+                break;
 
             case TRAVELLING:
                 progressTravelling();
+                break;
 
             case SPIKE:
                 progressSpike();
+                break;
 
         }
 
