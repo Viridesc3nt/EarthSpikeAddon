@@ -31,13 +31,19 @@ public class EarthSpikeListener implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
 
-        if(event.getAction() != LEFT_CLICK_AIR || event.getAction() != LEFT_CLICK_BLOCK) {
+        if(event.getAction() != LEFT_CLICK_AIR && event.getAction() != LEFT_CLICK_BLOCK) {
             return;
 
         }
 
         Player player = event.getPlayer();
         EarthSpike earthSpike = CoreAbility.getAbility(player, EarthSpike.class);
+
+        if(earthSpike == null) {
+            System.out.println("earthSpike null");
+            return;
+        }
+
         earthSpike.onClick();
 
 
