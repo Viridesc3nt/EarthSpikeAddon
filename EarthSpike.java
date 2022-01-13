@@ -91,7 +91,7 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         if(sourceBlock.getLocation().distanceSquared(player.getLocation()) > SOURCE_RANGE * SOURCE_RANGE || !isEarthbendable(player, sourceBlock))  {
             remove();
         } else {
-            state = States.TRAVELLING;
+            onClick();
         }
 
     }
@@ -245,3 +245,4 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         return VERSION;
     }
 }
+
