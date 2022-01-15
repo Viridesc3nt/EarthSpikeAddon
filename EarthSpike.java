@@ -4,15 +4,13 @@ import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.EarthAbility;
+import com.projectkorra.projectkorra.configuration.ConfigManager;
 import com.projectkorra.projectkorra.earthbending.RaiseEarth;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import com.projectkorra.projectkorra.util.TempBlock;
 import com.sun.org.apache.xerces.internal.impl.XMLEntityHandler;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
@@ -34,15 +32,16 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         SOURCE_SELECTED, TRAVELLING, SPIKE
 
     }
-    private static final String AUTHOR = "&2Viridescent_";
-    private static final String VERSION = "&21.0.0";
+    private static final String AUTHOR = ChatColor.GREEN + "Viridescent_";
+    private static final String VERSION = ChatColor.GREEN + "1.0.0";
     private static final String NAME = "EarthSpike";
-    private static final long COOLDOWN = 5000;
-    private static final long DISTANCE_UNTIL_SPIKE = 8;
-    private static final long SOURCE_RANGE = 4;
-    private static final double SPEED = 3;
+    private static long COOLDOWN;
+    private static long DISTANCE_UNTIL_SPIKE;
+    private static long SOURCE_RANGE;
+    private static double SPEED;
+    static String path = "ExtraAbilites.Viridescent_.Earth.EarthSpike.";
 
-    private double damage = 3;
+    private static double DAMAGE;
 
 
     private Location location;
@@ -57,6 +56,15 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
     private States state;
 
+    private void setFields() {
+        SPEED = ConfigManager.defaultConfig.get().getDouble(path+"SPEED");
+        DISTANCE_UNTIL_SPIKE = ConfigManager.defaultConfig.get().getLong(path+"DISTANCE_UNTIL_SPIKE");
+        COOLDOWN = ConfigManager.defaultConfig.get().getLong(path+"COOLDOWN");
+        SOURCE_RANGE = ConfigManager.defaultConfig.get().getLong(path+"SOURCE_RANGE");
+
+
+
+    }
 
 
     public EarthSpike(Player player) {
@@ -67,7 +75,6 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         Block block = getEarthSourceBlock(player, "EarthSpike",SOURCE_RANGE);
 
         if(block == null) {
-            System.out.println("Block Null");
             return;
 
         }
@@ -75,17 +82,23 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
         distanceTravelled = 0;
         sourceBlock = block;
         location = block.getLocation().add(.5, .5, .5);
+        setFields();
 
 
         state = States.SOURCE_SELECTED;
-        start();
+        if(!bPlayer.isOnCooldown(this)) {
+            start();
+
+
+        }
+
 
 
 
     }
     public void onClick(){
         if (state == States.SOURCE_SELECTED) {
-            ProjectKorra.log.info("Clicked");
+
             direction = GeneralMethods.getDirection(location, GeneralMethods.getTargetedLocation(player, SOURCE_RANGE * SOURCE_RANGE)).normalize().multiply(SPEED);
             direction.multiply(0.5);
             this.direction.setY(0);
@@ -99,18 +112,18 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
 
     private void progressSourceSelected() {
-        ProjectKorra.log.info("Source Selected");
+
        // playFocusEarthEffect(sourceBlock);
 
         if(sourceBlock.getLocation().distanceSquared(player.getLocation()) > SOURCE_RANGE * SOURCE_RANGE || !isEarthbendable(player, sourceBlock))  {
-            ProjectKorra.log.info("Source not in range");
+
             remove();
         }
 
     }
 
     private void progressTravelling() {
-        ProjectKorra.log.info("Progress Travelling");
+
         location.add(direction);
 
 
@@ -137,14 +150,14 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
                 continue;
             }
 
-            DamageHandler.damageEntity(target, damage, this);
+            DamageHandler.damageEntity(target, DAMAGE, this);
 
         }
 
     }
 
     private void progressSpike() {
-        ProjectKorra.log.info("Spike Generated");
+
         System.out.println(location);
         new RaiseEarth(player, location, 3);
         affectTargets();
@@ -158,16 +171,6 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
     @Override
     public void progress() {
-        //STAGE 1 (Travelling state):
-        //Vector in direction of ability, get the blocks along that vector and apply the particle effect. Use DISTANCE_UNTIL_SPIKE to determine how many blocks before the spike occurs
-
-
-        //STAGE 2 (Spike state): Physically raise the spike, afterwards using an affecttarget() function to apply damage and force
-
-
-
-        //Raise the pillar at the final stage of the attack
-
         if(!bPlayer.canBend(this)) {
 
             removeWithCooldown();
@@ -228,9 +231,15 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
 
     @Override
     public void load() {
-        perm = new Permission("bending.ability" + NAME);
+        perm = new Permission("bending.ability.EarthSpike");
         ProjectKorra.plugin.getServer().getPluginManager().addPermission(perm);
         listener = new EarthSpikeListener();
+        ConfigManager.defaultConfig.get().addDefault(path+"COOLDOWN", 5000);
+        ConfigManager.defaultConfig.get().addDefault(path+"DISTANCE_UNTIL_SPIKE", 8);
+        ConfigManager.defaultConfig.get().addDefault(path+"SOURCE_RANGE", 4);
+        ConfigManager.defaultConfig.get().addDefault(path+"SPEED", 3);
+        ConfigManager.defaultConfig.get().addDefault(path+"DAMAGE", 2);
+
         ProjectKorra.plugin.getServer().getPluginManager().registerEvents(listener, ProjectKorra.plugin);
 
 
@@ -251,4 +260,17 @@ public final class EarthSpike extends EarthAbility implements AddonAbility {
     public String getVersion() {
         return VERSION;
     }
+
+    @Override
+    public String getInstructions() {
+
+        return ChatColor.GREEN + "Press SNEAK on an Earthbendable block near you, and then click on a desired target to send a spike of Earth at them.";
+    }
+
+    @Override
+    public String getDescription() {
+
+        return ChatColor.GREEN + "EarthSpike is an Earthbending technique that allows it's user to send a spike of Earth from under the ground to any unsuspecting target in turn dealing damage and shooting them into the air.";
+    }
+
 }
