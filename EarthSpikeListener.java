@@ -40,7 +40,6 @@ public class EarthSpikeListener implements Listener {
         EarthSpike earthSpike = CoreAbility.getAbility(player, EarthSpike.class);
 
         if(earthSpike == null) {
-            System.out.println("earthSpike null");
             return;
         }
 
@@ -50,4 +49,5 @@ public class EarthSpikeListener implements Listener {
     }
 
 }
+
 
